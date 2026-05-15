@@ -3,7 +3,7 @@ name: CSVからサイトを自動更新
 on:
   push:
     paths:
-      - 'badge-tracker/gmo_badges.csv'
+      - 'gmo_badges.csv'
       - 'badge-tracker/badges.json'
   workflow_dispatch:
 
