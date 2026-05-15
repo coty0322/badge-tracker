@@ -1,0 +1,43 @@
+name: CSVからサイトを自動更新
+
+on:
+  push:
+    paths:
+      - 'badge-tracker/gmo_badges.csv'
+      - 'badge-tracker/badges.json'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python セットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: index.html を生成
+        run: python -W ignore badge-tracker/scripts/generate_html.py
+
+      - name: 生成結果を確認
+        run: |
+          ls -lh badge-tracker/index.html
+          echo "先頭100文字:"
+          head -c 100 badge-tracker/index.html
+
+      - name: Netlify にデプロイ
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: |
+          npm install -g netlify-cli
+          netlify deploy \
+            --prod \
+            --dir badge-tracker \
+            --site "$NETLIFY_SITE_ID" \
+            --auth "$NETLIFY_AUTH_TOKEN" \
+            --message "Auto deploy: $(date '+%Y-%m-%d %H:%M JST')"
