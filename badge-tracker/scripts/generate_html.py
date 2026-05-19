@@ -35,7 +35,7 @@ def load_csv(path):
             badge_str = row[4].strip().strip('"') if len(row) > 4 else ''
             badges = [b.strip() for b in badge_str.split('|') if b.strip()] if badge_str else []
             join_date = row[5].strip().strip('"') if len(row) > 5 else ''
-members.append({'dept': dept, 'name': name, 'badges': badges, 'join_date': join_date})
+            members.append({'dept': dept, 'name': name, 'badges': badges, 'join_date': join_date})
     return members
 
 def build_html(members, badge_images):
@@ -159,7 +159,7 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <option value="badge-desc">バッジ数↓</option>
       <option value="name">氏名順</option>
       <option value="join-asc">入社順（古い順）</option>
-<option value="join-desc">入社順（新しい順）</option>
+      <option value="join-desc">入社順（新しい順）</option>
     </select>
     <span class="count-label" id="countLabel"></span>
   </div>
