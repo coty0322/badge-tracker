@@ -238,7 +238,7 @@ rebuildCols();updateDeptFilter();render();
 
 def main():
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    csv_path = os.path.join(base, '..', 'gmo_badges.csv')
+    csv_path = os.path.join(base, 'gmo_badges.csv')
     badges_path = os.path.join(base, 'badges.json')
     out_path = os.path.join(base, 'index.html')
 
