@@ -34,7 +34,8 @@ def load_csv(path):
                 continue
             badge_str = row[4].strip().strip('"') if len(row) > 4 else ''
             badges = [b.strip() for b in badge_str.split('|') if b.strip()] if badge_str else []
-            members.append({'dept': dept, 'name': name, 'badges': badges})
+            join_date = row[5].strip().strip('"') if len(row) > 5 else ''
+members.append({'dept': dept, 'name': name, 'badges': badges, 'join_date': join_date})
     return members
 
 def build_html(members, badge_images):
