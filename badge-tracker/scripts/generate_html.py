@@ -157,6 +157,8 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <option value="adv-desc">アドバンス取得者優先</option>
       <option value="badge-desc">バッジ数↓</option>
       <option value="name">氏名順</option>
+      <option value="join-asc">入社順（古い順）</option>
+<option value="join-desc">入社順（新しい順）</option>
     </select>
     <span class="count-label" id="countLabel"></span>
   </div>
