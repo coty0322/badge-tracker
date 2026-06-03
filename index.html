@@ -66,9 +66,9 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
   <div class="header-left">
     <div class="header-dot"></div>
     <div>
-      <div class="header-title">GMOコマース バッジ取得状況</div>
+      <div class="header-title">GMOコマース 虎の穴バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: 2026年06月03日 10:09</div>
+      <div class="update-time">最終更新: 2026年06月03日 15:59</div>
     </div>
   </div>
   <div class="header-btns">
@@ -132,7 +132,8 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     </select>
     <select id="badgeFilter" onchange="render()"><option value="">バッジで絞り込み...</option></select>
     <span class="count-label" id="countLabel"></span>
-    <button class="btn-update" id="updateBtn" onclick="updateFromSheet()" title="スプレッドシートから最新データを取得">🔄 更新</button>
+    <button class="btn-update" id="updateBtn" onclick="updateFromSheet()" title="GitHubから最新データを取得">🔄 更新</button>
+    <span class="last-updated" id="lastUpdated"></span>
   </div>
   <div class="table-wrap">
     <table id="mainTable">
@@ -208,6 +209,8 @@ function memberRow(m){var adv=hasAdv(m);var html='<tr class="member-row'+(adv?''
 function importCSV(input){var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var lines=e.target.result.split('\n').filter(function(l){return l.trim();});members=[];lines.forEach(function(line,idx){if(idx===0&&(line.includes('氏名')||line.includes('部署')))return;var cols=line.split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});if(cols.length<2)return;var dept=cols[0],name=cols[1];if(!name)return;var badgeStr=cols[4]||'';var badges=badgeStr?badgeStr.split('|').map(function(b){return b.trim();}).filter(Boolean):[];members.push({dept:dept,name:name,badges:badges});});rebuildCols();updateDeptFilter();render();alert(members.length+'件に更新しました！');};reader.readAsText(file,'UTF-8');input.value='';}
 function downloadCSV(){var rows=[['本部','氏名'].concat(allBadgeCols)];members.forEach(function(m){var row=[m.dept,m.name];allBadgeCols.forEach(function(b){row.push(hasBadge(m,b)?1:0);});rows.push(row);});var txt=rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');var blob=new Blob(['\uFEFF'+txt],{type:'text/csv'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gmo_badges_full.csv';a.click();}
 rebuildCols();updateDeptFilter();updateBadgeFilter();rebuildCols();render();
+var savedUpdate = localStorage.getItem('badgeLastUpdated');
+if (savedUpdate) { var el = document.getElementById('lastUpdated'); if (el) el.textContent = '最終更新: ' + savedUpdate; }
 
 var SHEET_URL_CONST = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-2mSij7GhiWJ-oqelw6V2R1uJlufx7OJFgf0X5YVXeCKn5dz29hKhYQhCMAeRlC1-VvHvQCdrYcIx/pub?gid=135786375&single=true&output=csv';
 
@@ -285,6 +288,12 @@ function updateFromSheet() {
       updateBadgeFilter();
       render();
       showToast('✅ ' + newMembers.length + '人のデータを更新しました！');
+      var now = new Date().toLocaleString('ja-JP', {timeZone:'Asia/Tokyo',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+      var el = document.getElementById('lastUpdated');
+      if (el) el.textContent = '最終更新: ' + now + ' (' + newMembers.length + '人)';
+      var ut = document.querySelector('.update-time');
+      if (ut) ut.textContent = '最終更新: ' + now;
+      localStorage.setItem('badgeLastUpdated', now + ' (' + newMembers.length + '人)');
       btn.disabled = false;
       btn.textContent = '🔄 更新';
     })
