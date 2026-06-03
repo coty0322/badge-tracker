@@ -68,7 +68,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <div>
       <div class="header-title">GMOコマース 虎の穴バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: 2026年06月03日 18:18</div>
+      <div class="update-time">最終更新: 2026年06月03日 18:27</div>
     </div>
   </div>
   <div class="header-btns">
@@ -305,12 +305,7 @@ function updateFromSheet() {
       updateBadgeFilter();
       render();
       showToast('✅ ' + newMembers.length + '人のデータを更新しました！');
-      var now = new Date().toLocaleString('ja-JP', {timeZone:'Asia/Tokyo',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-      var el = document.getElementById('lastUpdated');
-      if (el) el.textContent = '最終更新: ' + now + ' (' + newMembers.length + '人)';
-      var ut = document.querySelector('.update-time');
-      if (ut) ut.textContent = '最終更新: ' + now;
-      localStorage.setItem('badgeLastUpdated', now + ' (' + newMembers.length + '人)');
+      // 最終更新時刻はlast_updated.jsonから取得（上書きしない）
       btn.disabled = false;
       btn.textContent = '🔄 更新';
     })
