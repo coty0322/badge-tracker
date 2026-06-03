@@ -68,7 +68,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <div>
       <div class="header-title">GMOコマース 虎の穴バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: 2026年06月03日 15:59</div>
+      <div class="update-time">最終更新: 2026年06月03日 18:07</div>
     </div>
   </div>
   <div class="header-btns">
@@ -212,7 +212,10 @@ rebuildCols();updateDeptFilter();updateBadgeFilter();rebuildCols();render();
 var savedUpdate = localStorage.getItem('badgeLastUpdated');
 if (savedUpdate) { var el = document.getElementById('lastUpdated'); if (el) el.textContent = '最終更新: ' + savedUpdate; }
 
-var SHEET_URL_CONST = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-2mSij7GhiWJ-oqelw6V2R1uJlufx7OJFgf0X5YVXeCKn5dz29hKhYQhCMAeRlC1-VvHvQCdrYcIx/pub?gid=135786375&single=true&output=csv';
+// ページ読み込み時に自動でGitHubから最新データを取得
+setTimeout(function() { updateFromSheet(); }, 1000);
+
+var SHEET_URL_CONST = 'https://raw.githubusercontent.com/coty0322/badge-data/main/gmo_badges%20(13).csv';
 
 function parseCSVForUpdate(text) {
   var lines = text.trim().split('\n');
