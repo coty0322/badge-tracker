@@ -68,7 +68,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <div>
       <div class="header-title">GMOコマース 虎の穴バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: 2026年06月03日 18:07</div>
+      <div class="update-time">最終更新: 2026年06月03日 18:13</div>
     </div>
   </div>
   <div class="header-btns">
@@ -275,7 +275,7 @@ function updateFromSheet() {
   btn.disabled = true;
   btn.textContent = '⏳ 取得中...';
   showToast('📊 スプレッドシートから取得中...');
-  var proxyUrl = 'https://raw.githubusercontent.com/coty0322/badge-data/main/gmo_badges%20(13).csv';
+  var proxyUrl = 'https://raw.githubusercontent.com/coty0322/badge-data/main/gmo_badges%20(13).csv?t=' + Date.now();
   fetch(proxyUrl)
     .then(function(r) {
       if (!r.ok) throw new Error('取得失敗');
