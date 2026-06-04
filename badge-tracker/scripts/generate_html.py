@@ -137,6 +137,10 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <div class="stat-value" id="s-pct">-%</div>
     </div>
     <div class="stat-card">
+      <div class="stat-label">マスター取得</div>
+      <div class="stat-value" id="s-master">-</div>
+    </div>
+    <div class="stat-card">
       <div class="stat-label">部署数</div>
       <div class="stat-value" id="s-dept">-</div>
     </div>
@@ -145,6 +149,10 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
     <div class="adv-alert-title">⚠️ アドバンス未取得メンバー</div>
     <div id="advAlertNames"></div>
   </div>
+  <div class="adv-alert" id="masterAlert" style="display:none;background:#f0fffe;border-color:#99e6e0;">
+    <div class="adv-alert-title" style="color:#0a7a6e;">🏆 マスター取得メンバー</div>
+    <div id="masterAlertNames"></div>
+  </div>
   <div class="controls">
     <select id="deptFilter" onchange="render()"></select>
     <input type="text" id="nameSearch" placeholder="氏名で検索..." oninput="render()">
@@ -152,6 +160,7 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <option value="">全員</option>
       <option value="yes">アドバンス取得済み</option>
       <option value="no">アドバンス未取得</option>
+      <option value="master">マスター取得済み</option>
     </select>
     <select id="sortSel" onchange="render()">
       <option value="dept">組織図順</option>
@@ -161,6 +170,7 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <option value="join-asc">入社順（古い順）</option>
       <option value="join-desc">入社順（新しい順）</option>
     </select>
+    <input type="text" id="badgeSearch" placeholder="バッジで絞り込み..." oninput="render()">
     <span class="count-label" id="countLabel"></span>
   </div>
   <div class="table-wrap">
@@ -191,10 +201,30 @@ function getDeptOrder(dept){{
 var members=INITIAL_MEMBERS.slice();
 var allBadgeCols=[];
 var BADGE_ORDER=['虎の穴｜アドバンス','虎の穴｜ベーシック','虎の穴｜マスター','虎の穴｜RPA基礎','虎の穴｜RPA応用','虎の穴｜汎用生成AIセキュリティ基礎','虎の穴｜画像生成AI入門','虎の穴｜Slackワークフロー','虎の穴｜Power Automate クラウド版','虎の穴｜Dify入門','虎の穴｜Google App Script（GAS）入門','虎の穴｜Google Apps Script（GAS）応用','虎の穴｜ConoHa AI Canvas','虎の穴｜Chrome拡張機能開発','虎の穴｜バイブDX基礎','虎の穴｜Adobe Express 入門','虎の穴｜AI動画編集基礎（CapCut）','虎の穴｜Claude基礎（AnthropicAcademy）'];
-function short(b){{return b.replace(/虎の穴[｜|]/,'').replace('（AnthropicAcademy）','').replace('（CapCut）','').replace('クラウド版','');}}
+
+function short(b){{
+  var s = b.replace(/虎の穴[｜|]/,'').replace('（AnthropicAcademy）','').replace('（CapCut）','').replace('クラウド版','');
+  if(b.includes('GAS') && b.includes('応用')) s = 'GAS応用';
+  if(b.includes('GAS') && b.includes('入門')) s = 'GAS入門';
+  return s;
+}}
+
 function hasBadge(m,b){{if(!m.badges)return false;return m.badges.some(function(mb){{var a=mb.trim().replace(/[|]/g,'｜').replace(/[\s]/g,'');var c=b.trim().replace(/[|]/g,'｜').replace(/[\s]/g,'');return a===c||a.includes(c.replace('虎の穴｜',''))||c.includes(a.replace('虎の穴｜',''));}});}}
 function hasAdv(m){{return hasBadge(m,'虎の穴｜アドバンス');}}
-function getBadgeImg(name){{var keys=Object.keys(BADGE_IMAGES);for(var i=0;i<keys.length;i++){{var k=keys[i];if(k.replace(/[\s]/g,'')===name.replace(/[\s]/g,'')||name.includes(k.replace('虎の穴｜',''))||k.includes(name.replace('虎の穴｜',''))){{return '<img src="'+BADGE_IMAGES[k]+'" class="badge-img" title="'+name+'">';}}}}var isAdv=name.includes('アドバンス');return '<span class="'+(isAdv?'dot-adv':'dot-yes')+'">✓</span>';}}
+function hasMaster(m){{return hasBadge(m,'虎の穴｜マスター');}}
+
+function getBadgeImg(name){{
+  var keys=Object.keys(BADGE_IMAGES);
+  for(var i=0;i<keys.length;i++){{
+    var k=keys[i];
+    var kn=k.replace(/[\s]/g,'');
+    var nn=name.replace(/[\s]/g,'');
+    if(kn===nn){{return '<img src="'+BADGE_IMAGES[k]+'" class="badge-img" title="'+name+'">';}}
+  }}
+  var isAdv=name.includes('アドバンス');
+  return '<span class="'+(isAdv?'dot-adv':'dot-yes')+'">✓</span>';
+}}
+
 function rebuildCols(){{var cols={{}};members.forEach(function(m){{if(m.badges)m.badges.forEach(function(b){{if(b)cols[b]=1;}});}});BADGE_ORDER.forEach(function(b){{cols[b]=1;}});allBadgeCols=Object.keys(cols).sort(function(a,b2){{var ai=BADGE_ORDER.findIndex(function(x){{return x.replace(/[\s]/g,'')===a.replace(/[\s]/g,'');}});var bi=BADGE_ORDER.findIndex(function(x){{return x.replace(/[\s]/g,'')===b2.replace(/[\s]/g,'');}});if(ai<0)ai=99;if(bi<0)bi=99;return ai-bi;}});}}
 function getDepts(){{
   var depts=[...new Set(members.map(function(m){{return m.dept;}}).filter(Boolean))];
@@ -202,25 +232,51 @@ function getDepts(){{
   return depts;
 }}
 function updateDeptFilter(){{var sel=document.getElementById('deptFilter');var cur=sel.value;sel.innerHTML='<option value="">すべての本部</option>';getDepts().forEach(function(d){{var o=document.createElement('option');o.value=d;o.textContent=d;if(d===cur)o.selected=true;sel.appendChild(o);}});}}
-function getFiltered(){{var dept=document.getElementById('deptFilter').value;var name=document.getElementById('nameSearch').value.toLowerCase();var adv=document.getElementById('advFilter').value;return members.filter(function(m){{if(dept&&m.dept!==dept)return false;if(name&&!m.name.toLowerCase().includes(name))return false;if(adv==='yes'&&!hasAdv(m))return false;if(adv==='no'&&hasAdv(m))return false;return true;}});}}
+function getFiltered(){{
+  var dept=document.getElementById('deptFilter').value;
+  var name=document.getElementById('nameSearch').value.toLowerCase();
+  var adv=document.getElementById('advFilter').value;
+  var badge=document.getElementById('badgeSearch').value.toLowerCase();
+  return members.filter(function(m){{
+    if(dept&&m.dept!==dept)return false;
+    if(name&&!m.name.toLowerCase().includes(name))return false;
+    if(adv==='yes'&&!hasAdv(m))return false;
+    if(adv==='no'&&hasAdv(m))return false;
+    if(adv==='master'&&!hasMaster(m))return false;
+    if(badge&&!m.badges.some(function(b){{return b.toLowerCase().includes(badge);}}))return false;
+    return true;
+  }});
+}}
 function getSorted(arr){{var key=document.getElementById('sortSel').value;var copy=arr.slice();if(key==='adv-desc'){{copy.sort(function(a,b){{return(hasAdv(b)?1:0)-(hasAdv(a)?1:0)||b.badges.length-a.badges.length;}});}}else if(key==='badge-desc'){{copy.sort(function(a,b){{return b.badges.length-a.badges.length;}});}}else if(key==='name'){{copy.sort(function(a,b){{return a.name.localeCompare(b.name,'ja');}});}}else if(key==='join-asc'){{copy.sort(function(a,b){{return(a.join_date||'').localeCompare(b.join_date||'');}});}}else if(key==='join-desc'){{copy.sort(function(a,b){{return(b.join_date||'').localeCompare(a.join_date||'');}});}}else{{copy.sort(function(a,b){{var od=getDeptOrder(a.dept)-getDeptOrder(b.dept);if(od!==0)return od;return a.dept.localeCompare(b.dept,'ja')||a.name.localeCompare(b.name,'ja');}});}}return copy;}}
 function render(){{
   var f=getFiltered();
   var noAdv=f.filter(function(m){{return!hasAdv(m);}});
+  var masterMembers=members.filter(hasMaster);
   var advCount=f.length-noAdv.length;
   var pct=f.length>0?Math.round(advCount/f.length*100):0;
   var deptCount=[...new Set(f.map(function(m){{return m.dept;}}).filter(Boolean))].length;
-  document.getElementById('s-total').textContent=f.length;
-  document.getElementById('s-adv').textContent=advCount;
-  document.getElementById('s-no').textContent=noAdv.length;
-  document.getElementById('s-pct').textContent=pct+'%';
-  document.getElementById('s-bar').style.width=pct+'%';
-  document.getElementById('s-dept').textContent=deptCount;
+  document.getElementById('s-total').textContent=members.length;
+  document.getElementById('s-adv').textContent=members.filter(hasAdv).length;
+  document.getElementById('s-no').textContent=members.filter(function(m){{return!hasAdv(m);}}).length;
+  document.getElementById('s-pct').textContent=Math.round(members.filter(hasAdv).length/members.length*100)+'%';
+  document.getElementById('s-bar').style.width=Math.round(members.filter(hasAdv).length/members.length*100)+'%';
+  document.getElementById('s-master').textContent=masterMembers.length;
+  document.getElementById('s-dept').textContent=[...new Set(members.map(function(m){{return m.dept;}}).filter(Boolean))].length;
   document.getElementById('countLabel').textContent=f.length+'人表示中';
   var al=document.getElementById('advAlert');
-  if(noAdv.length>0&&document.getElementById('advFilter').value!=='yes'){{al.style.display='block';document.getElementById('advAlertNames').innerHTML=noAdv.map(function(m){{return'<span class="adv-tag">'+m.name+'</span>';}}).join('');}}else{{al.style.display='none';}}
+  var noAdvAll=members.filter(function(m){{return!hasAdv(m);}});
+  if(noAdvAll.length>0&&document.getElementById('advFilter').value!=='yes'){{al.style.display='block';document.getElementById('advAlertNames').innerHTML=noAdvAll.map(function(m){{return'<span class="adv-tag">'+m.name+'</span>';}}).join('');}}else{{al.style.display='none';}}
+  var ml=document.getElementById('masterAlert');
+  if(masterMembers.length>0){{ml.style.display='block';document.getElementById('masterAlertNames').innerHTML=masterMembers.map(function(m){{return'<span class="adv-tag" style="background:#e0faf8;color:#0a7a6e;">'+m.name+'</span>';}}).join('');}}else{{ml.style.display='none';}}
   var thHtml='<tr><th class="col-dept">本部</th><th class="col-name">氏名</th>';
-  allBadgeCols.forEach(function(b){{var isAdv=b.includes('アドバンス');var imgKey=Object.keys(BADGE_IMAGES).find(function(k){{return k.replace(/[\s]/g,'')===b.replace(/[\s]/g,'')||b.includes(k.replace('虎の穴｜',''))||k.includes(b.replace('虎の穴｜',''));}});var img=imgKey?'<img src="'+BADGE_IMAGES[imgKey]+'" style="width:28px;height:28px;border-radius:50%;display:block;margin:0 auto 3px;" title="'+b+'">':'';thHtml+='<th class="badge-col-header'+(isAdv?' adv-col':'')+'" title="'+b+'">'+img+'<div style="writing-mode:vertical-rl;font-size:9px;line-height:1.2;">'+short(b)+'</div></th>';}});
+  allBadgeCols.forEach(function(b){{
+    var isAdv=b.includes('アドバンス');
+    var imgKey=Object.keys(BADGE_IMAGES).find(function(k){{
+      return k.replace(/[\s]/g,'')=== b.replace(/[\s]/g,'');
+    }});
+    var img=imgKey?'<img src="'+BADGE_IMAGES[imgKey]+'" style="width:28px;height:28px;border-radius:50%;display:block;margin:0 auto 3px;" title="'+b+'">':'';
+    thHtml+='<th class="badge-col-header'+(isAdv?' adv-col':'')+'" title="'+b+'">'+img+'<div style="writing-mode:vertical-rl;font-size:9px;line-height:1.2;">'+short(b)+'</div></th>';
+  }});
   thHtml+='</tr>';
   document.getElementById('thead').innerHTML=thHtml;
   var sorted=getSorted(f);
@@ -231,7 +287,7 @@ function render(){{
   document.getElementById('tbody').innerHTML=tbHtml;
 }}
 function memberRow(m){{var adv=hasAdv(m);var html='<tr class="member-row'+(adv?'':' no-adv')+'"><td class="col-dept-cell">'+(m.dept.length>14?m.dept.substring(0,14)+'…':m.dept)+'</td><td class="col-name-cell">'+m.name+'</td>';allBadgeCols.forEach(function(b){{var has=hasBadge(m,b);html+='<td>';if(has)html+=getBadgeImg(b);else html+='<span class="dot-no"></span>';html+='</td>';}});return html+'</tr>';}}
-function importCSV(input){{var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){{var lines=e.target.result.split('\\n').filter(function(l){{return l.trim();}});members=[];lines.forEach(function(line,idx){{if(idx===0&&(line.includes('氏名')||line.includes('部署')))return;var cols=line.split(',').map(function(c){{return c.trim().replace(/^"|"$/g,'');}});if(cols.length<2)return;var dept=cols[0],name=cols[1];if(!name)return;var badgeStr=cols[4]||'';var badges=badgeStr?badgeStr.split('|').map(function(b){{return b.trim();}}).filter(Boolean):[];members.push({{dept:dept,name:name,badges:badges}});}});rebuildCols();updateDeptFilter();render();alert(members.length+'件に更新しました！');}};reader.readAsText(file,'UTF-8');input.value='';}}
+function importCSV(input){{var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){{var text=e.target.result;var lines=text.split('\\n').filter(function(l){{return l.trim();}});members=[];lines.forEach(function(line,idx){{if(idx===0&&(line.includes('氏名')||line.includes('部署')))return;var cols=line.split(',').map(function(c){{return c.trim().replace(/^"|"$/g,'');}});if(cols.length<2)return;var dept=cols[0],name=cols[1];if(!name)return;var badgeStr=cols[4]||'';var badges=badgeStr?badgeStr.split('|').map(function(b){{return b.trim();}}).filter(Boolean):[];var join_date=cols[5]||'';members.push({{dept:dept,name:name,badges:badges,join_date:join_date}});}});rebuildCols();updateDeptFilter();render();alert(members.length+'件に更新しました！');}};reader.readAsText(file,'UTF-8');input.value='';}}
 function downloadCSV(){{var rows=[['本部','氏名'].concat(allBadgeCols)];members.forEach(function(m){{var row=[m.dept,m.name];allBadgeCols.forEach(function(b){{row.push(hasBadge(m,b)?1:0);}});rows.push(row);}});var txt=rows.map(function(r){{return r.map(function(c){{return'"'+String(c).replace(/"/g,'""')+'"';}}).join(',');}}).join('\\n');var blob=new Blob(['\\uFEFF'+txt],{{type:'text/csv'}});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gmo_badges_full.csv';a.click();}}
 rebuildCols();updateDeptFilter();render();
 </script>
