@@ -68,7 +68,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <div>
       <div class="header-title">GMOコマース 虎の穴バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: 2026年06月04日 13:26</div>
+      <div class="update-time">最終更新: 2026年06月05日 14:47</div>
     </div>
   </div>
   <div class="header-btns">
@@ -162,7 +162,7 @@ function getDeptOrder(dept){
 }
 var members=INITIAL_MEMBERS.slice();
 var allBadgeCols=[];
-var BADGE_ORDER=['虎の穴｜アドバンス','虎の穴｜ベーシック','虎の穴｜マスター','虎の穴｜RPA基礎','虎の穴｜RPA応用','虎の穴｜汎用生成AIセキュリティ基礎','虎の穴｜画像生成AI入門','虎の穴｜Slackワークフロー','虎の穴｜Power Automate クラウド版','虎の穴｜Dify入門','虎の穴｜Google App Script（GAS）入門','虎の穴｜Google Apps Script（GAS）応用','虎の穴｜ConoHa AI Canvas','虎の穴｜Chrome拡張機能開発','虎の穴｜バイブDX基礎','虎の穴｜Adobe Express 入門','虎の穴｜AI動画編集基礎（CapCut）','虎の穴｜Claude基礎（AnthropicAcademy）'];
+var BADGE_ORDER=['虎の穴｜アドバンス','虎の穴｜ベーシック','虎の穴｜マスター','虎の穴｜RPA基礎','虎の穴｜RPA応用','虎の穴｜汎用生成AIセキュリティ基礎','虎の穴｜画像生成AI入門','虎の穴｜Slackワークフロー','虎の穴｜Power Automate クラウド版','虎の穴｜Dify入門','虎の穴｜Google Apps Script（GAS）入門','虎の穴｜Google Apps Script（GAS）応用','虎の穴｜ConoHa AI Canvas','虎の穴｜Chrome拡張機能開発','虎の穴｜バイブDX基礎','虎の穴｜Adobe Express 入門','虎の穴｜AI動画編集基礎（CapCut）','虎の穴｜Claude基礎（AnthropicAcademy）'];
 function short(b){return b.replace(/虎の穴[｜|]/,'').replace('（AnthropicAcademy）','').replace('（CapCut）','').replace('クラウド版','');}
 function hasBadge(m,b){if(!m.badges)return false;return m.badges.some(function(mb){var a=mb.trim().replace(/[|]/g,'｜').replace(/[\s]/g,'');var c=b.trim().replace(/[|]/g,'｜').replace(/[\s]/g,'');return a===c||a.includes(c.replace('虎の穴｜',''))||c.includes(a.replace('虎の穴｜',''));});}
 function hasAdv(m){return hasBadge(m,'虎の穴｜アドバンス');}function hasMaster(m){return hasBadge(m,'虎の穴｜マスター');}
