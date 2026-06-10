@@ -64,6 +64,9 @@ body{{font-family:'Noto Sans JP',sans-serif;background:#f4f5f7;color:#1a1a2e;fon
 .btn-import:hover{{background:#2a4d7a;}}
 .btn-export{{background:#1a1a2e;color:#fff;border:1px solid #444;}}
 .btn-export:hover{{background:#2d2d4e;}}
+.btn-update{{background:#10b981;color:#fff;border:none;}}
+.btn-update:hover{{background:#059669;}}
+.btn-update:disabled{{background:#6b7280;cursor:not-allowed;}}
 .main{{padding:20px 24px;}}
 .stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;}}
 .stat-card{{background:#fff;border-radius:12px;padding:16px 20px;border:1px solid #e8eaed;box-shadow:0 1px 4px rgba(0,0,0,0.05);}}
@@ -100,19 +103,30 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
 .dot-adv{{display:inline-block;width:18px;height:18px;border-radius:50%;background:#4ECDC4;line-height:18px;color:#fff;font-size:11px;}}
 .dot-no{{display:inline-block;width:18px;height:18px;border-radius:50%;background:#f0f0f0;}}
 .update-time{{font-size:10px;color:#8899aa;margin-top:2px;}}
+.loading-overlay{{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(26,26,46,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;}}
+.loading-box{{background:#fff;border-radius:12px;padding:32px 48px;text-align:center;}}
+.loading-spinner{{width:40px;height:40px;border:4px solid #e8eaed;border-top-color:#4ECDC4;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;}}
+@keyframes spin{{to{{transform:rotate(360deg);}}}}
 </style>
 </head>
 <body>
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div style="color:#1a1a2e;font-weight:700;">最新データを読み込み中...</div>
+  </div>
+</div>
 <div class="header">
   <div class="header-left">
     <div class="header-dot"></div>
     <div>
       <div class="header-title">GMOコマース バッジ取得状況</div>
       <div class="header-sub">虎の穴 Learning Badge Tracker</div>
-      <div class="update-time">最終更新: {now}</div>
+      <div class="update-time" id="updateTimeLabel">読み込み中...</div>
     </div>
   </div>
   <div class="header-btns">
+    <button class="btn btn-update" id="updateBtn" onclick="fetchLatestCSV()">🔄 更新</button>
     <label class="btn btn-import">📥 CSVを更新<input type="file" accept=".csv" style="display:none" onchange="importCSV(this)"></label>
     <button class="btn btn-export" onclick="downloadCSV()">📤 CSVエクスポート</button>
   </div>
@@ -161,6 +175,9 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
       <option value="join-asc">入社順（古い順）</option>
       <option value="join-desc">入社順（新しい順）</option>
     </select>
+    <select id="badgeFilter" onchange="render()">
+      <option value="">バッジで絞り込み...</option>
+    </select>
     <span class="count-label" id="countLabel"></span>
   </div>
   <div class="table-wrap">
@@ -173,6 +190,8 @@ thead th.adv-col{{background:#0a3d35;color:#4ECDC4;}}
 <script>
 var BADGE_IMAGES = {badge_images_json};
 var INITIAL_MEMBERS = {members_json};
+var CSV_URL = 'https://raw.githubusercontent.com/coty0322/badge-data/main/gmo_badges%20(13).csv';
+var LAST_UPDATED_URL = 'https://raw.githubusercontent.com/coty0322/badge-data/main/last_updated.json';
 var DEPT_ORDER = [
   '代表取締役社長','常務取締役',
   '営業統括本部','営業第1本部','営業第2本部','パートナー推進本部','営業推進本部',
@@ -202,7 +221,8 @@ function getDepts(){{
   return depts;
 }}
 function updateDeptFilter(){{var sel=document.getElementById('deptFilter');var cur=sel.value;sel.innerHTML='<option value="">すべての本部</option>';getDepts().forEach(function(d){{var o=document.createElement('option');o.value=d;o.textContent=d;if(d===cur)o.selected=true;sel.appendChild(o);}});}}
-function getFiltered(){{var dept=document.getElementById('deptFilter').value;var name=document.getElementById('nameSearch').value.toLowerCase();var adv=document.getElementById('advFilter').value;return members.filter(function(m){{if(dept&&m.dept!==dept)return false;if(name&&!m.name.toLowerCase().includes(name))return false;if(adv==='yes'&&!hasAdv(m))return false;if(adv==='no'&&hasAdv(m))return false;return true;}});}}
+function updateBadgeFilter(){{var sel=document.getElementById('badgeFilter');var cur=sel.value;sel.innerHTML='<option value="">バッジで絞り込み...</option>';allBadgeCols.forEach(function(b){{var o=document.createElement('option');o.value=b;o.textContent=b.replace(/虎の穴[｜|]/,'');if(b===cur)o.selected=true;sel.appendChild(o);}});}}
+function getFiltered(){{var dept=document.getElementById('deptFilter').value;var name=document.getElementById('nameSearch').value.toLowerCase();var adv=document.getElementById('advFilter').value;var badge=document.getElementById('badgeFilter').value;return members.filter(function(m){{if(dept&&m.dept!==dept)return false;if(name&&!m.name.toLowerCase().includes(name))return false;if(adv==='yes'&&!hasAdv(m))return false;if(adv==='no'&&hasAdv(m))return false;if(badge&&!hasBadge(m,badge))return false;return true;}});}}
 function getSorted(arr){{var key=document.getElementById('sortSel').value;var copy=arr.slice();if(key==='adv-desc'){{copy.sort(function(a,b){{return(hasAdv(b)?1:0)-(hasAdv(a)?1:0)||b.badges.length-a.badges.length;}});}}else if(key==='badge-desc'){{copy.sort(function(a,b){{return b.badges.length-a.badges.length;}});}}else if(key==='name'){{copy.sort(function(a,b){{return a.name.localeCompare(b.name,'ja');}});}}else if(key==='join-asc'){{copy.sort(function(a,b){{return(a.join_date||'').localeCompare(b.join_date||'');}});}}else if(key==='join-desc'){{copy.sort(function(a,b){{return(b.join_date||'').localeCompare(a.join_date||'');}});}}else{{copy.sort(function(a,b){{var od=getDeptOrder(a.dept)-getDeptOrder(b.dept);if(od!==0)return od;return a.dept.localeCompare(b.dept,'ja')||a.name.localeCompare(b.name,'ja');}});}}return copy;}}
 function render(){{
   var f=getFiltered();
@@ -231,9 +251,56 @@ function render(){{
   document.getElementById('tbody').innerHTML=tbHtml;
 }}
 function memberRow(m){{var adv=hasAdv(m);var html='<tr class="member-row'+(adv?'':' no-adv')+'"><td class="col-dept-cell">'+(m.dept.length>14?m.dept.substring(0,14)+'…':m.dept)+'</td><td class="col-name-cell">'+m.name+'</td>';allBadgeCols.forEach(function(b){{var has=hasBadge(m,b);html+='<td>';if(has)html+=getBadgeImg(b);else html+='<span class="dot-no"></span>';html+='</td>';}});return html+'</tr>';}}
-function importCSV(input){{var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){{var lines=e.target.result.split('\\n').filter(function(l){{return l.trim();}});members=[];lines.forEach(function(line,idx){{if(idx===0&&(line.includes('氏名')||line.includes('部署')))return;var cols=line.split(',').map(function(c){{return c.trim().replace(/^"|"$/g,'');}});if(cols.length<2)return;var dept=cols[0],name=cols[1];if(!name)return;var badgeStr=cols[4]||'';var badges=badgeStr?badgeStr.split('|').map(function(b){{return b.trim();}}).filter(Boolean):[];members.push({{dept:dept,name:name,badges:badges}});}});rebuildCols();updateDeptFilter();render();alert(members.length+'件に更新しました！');}};reader.readAsText(file,'UTF-8');input.value='';}}
+function parseCSVText(text){{
+  var clean=text.replace(/^\uFEFF/,'');
+  var lines=clean.trim().split('\\n').filter(function(l){{return l.trim();}});
+  var result=[];
+  lines.forEach(function(line,idx){{
+    if(idx===0&&(line.includes('氏名')||line.includes('部署')))return;
+    var cols=line.split(',').map(function(c){{return c.trim().replace(/^"|"$/g,'');}});
+    if(cols.length<2)return;
+    var dept=cols[0],name=cols[1];
+    if(!name)return;
+    var badgeStr=cols[4]||'';
+    var badges=badgeStr?badgeStr.split('|').map(function(b){{return b.trim();}}).filter(Boolean):[];
+    var join_date=cols[5]||'';
+    result.push({{dept:dept,name:name,badges:badges,join_date:join_date}});
+  }});
+  return result;
+}}
+async function fetchLatestCSV(){{
+  var btn=document.getElementById('updateBtn');
+  btn.disabled=true;
+  btn.textContent='読み込み中...';
+  try{{
+    var ts='?t='+Date.now();
+    var res=await fetch(CSV_URL+ts);
+    if(!res.ok)throw new Error('CSVの取得に失敗しました');
+    var text=await res.text();
+    members=parseCSVText(text);
+    rebuildCols();updateDeptFilter();updateBadgeFilter();render();
+    // 最終更新時刻を取得
+    try{{
+      var res2=await fetch(LAST_UPDATED_URL+ts);
+      if(res2.ok){{
+        var info=await res2.json();
+        document.getElementById('updateTimeLabel').textContent='最終更新: '+info.updated_at+' ('+info.count+'人)';
+      }}
+    }}catch(e){{}}
+  }}catch(e){{
+    alert('データの読み込みに失敗しました: '+e.message);
+  }}
+  btn.disabled=false;
+  btn.textContent='🔄 更新';
+}}
+function importCSV(input){{var file=input.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){{members=parseCSVText(e.target.result);rebuildCols();updateDeptFilter();updateBadgeFilter();render();alert(members.length+'件に更新しました！');}};reader.readAsText(file,'UTF-8');input.value='';}}
 function downloadCSV(){{var rows=[['本部','氏名'].concat(allBadgeCols)];members.forEach(function(m){{var row=[m.dept,m.name];allBadgeCols.forEach(function(b){{row.push(hasBadge(m,b)?1:0);}});rows.push(row);}});var txt=rows.map(function(r){{return r.map(function(c){{return'"'+String(c).replace(/"/g,'""')+'"';}}).join(',');}}).join('\\n');var blob=new Blob(['\\uFEFF'+txt],{{type:'text/csv'}});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='gmo_badges_full.csv';a.click();}}
-rebuildCols();updateDeptFilter();render();
+// ページ読み込み時に自動でCSVを取得
+window.addEventListener('load', async function(){{
+  await fetchLatestCSV();
+  document.getElementById('loadingOverlay').style.display='none';
+}});
+rebuildCols();updateDeptFilter();updateBadgeFilter();render();
 </script>
 </body>
 </html>'''
