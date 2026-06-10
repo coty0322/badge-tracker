@@ -316,6 +316,9 @@ function updateFromSheet() {
     });
 }
 
+
+// ページ読み込み時に自動でCSVを取得
+window.addEventListener("load", function() { updateFromSheet(); });
 </script>
 </body>
 </html>
