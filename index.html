@@ -325,15 +325,7 @@ function updateFromSheet() {
 // ページ読み込み時に自動でCSVを取得
 window.addEventListener("load", function() { updateFromSheet(); });
 function sendUpdateRequest() {
-  var btn = document.querySelector('.btn-request');
-  btn.disabled = true;
-  btn.textContent = '✅ 送信しました！';
-  var img = new Image();
-  img.src = 'https://script.google.com/a/macros/gmo-c.jp/s/AKfycbxCQL4oyh71Ser8V1SpbJZQ1ysgTio8pg62G7OUI8MCj1yA4clWHeaKdN_uxTEKcNU9/exec?t=' + Date.now();
-  setTimeout(function() {
-    btn.disabled = false;
-    btn.textContent = '📩 更新をリクエスト';
-  }, 3000);
+  window.open('https://script.google.com/a/macros/gmo-c.jp/s/AKfycbxCQL4oyh71Ser8V1SpbJZQ1ysgTio8pg62G7OUI8MCj1yA4clWHeaKdN_uxTEKcNU9/exec', '_blank');
 }
 
 </script>
