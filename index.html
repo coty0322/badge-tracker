@@ -59,6 +59,10 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
 #updateToast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a1d27;border:2px solid #4ECDC4;color:#4ECDC4;padding:14px 28px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;display:none;box-shadow:0 8px 32px rgba(78,205,196,0.4);white-space:nowrap;}
 #updateToast.show{display:block;}
 #updateToast.error{border-color:#ef4444;color:#ef4444;}
+.btn-request{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:#f59e0b;color:#fff;font-size:12px;font-weight:500;cursor:pointer;border:none;text-decoration:none;font-family:inherit;transition:all 0.15s;}
+.btn-request:hover{background:#d97706;}
+.btn-request{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;background:#f59e0b;color:#fff;font-size:12px;font-weight:500;text-decoration:none;font-family:inherit;transition:all 0.15s;}
+.btn-request:hover{background:#d97706;}
 </style>
 </head>
 <body>
@@ -133,6 +137,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <select id="badgeFilter" onchange="render()"><option value="">バッジで絞り込み...</option></select>
     <span class="count-label" id="countLabel"></span>
     <button class="btn-update" id="updateBtn" onclick="updateFromSheet()" title="GitHubから最新データを取得">🔄 更新</button>
+    <a class="btn-request" href="mailto:asamizu@gmo-c.jp?subject=%E3%80%90%E3%83%90%E3%83%83%E3%82%B8%E3%83%88%E3%83%A9%E3%83%83%E3%82%AB%E3%83%BC%E3%80%91%E3%83%87%E3%83%BC%E3%82%BF%E6%9B%B4%E6%96%B0%E3%81%AE%E3%81%8A%E9%A1%98%E3%81%84&body=%E3%83%90%E3%83%83%E3%82%B8%E3%83%88%E3%83%A9%E3%83%83%E3%82%AB%E3%83%BC%E3%81%AE%E3%83%87%E3%83%BC%E3%82%BF%E3%82%92%E6%9C%80%E6%96%B0%E3%81%AB%E3%81%97%E3%81%A6%E3%81%84%E3%81%9F%E3%81%A0%E3%81%91%E3%82%8B%E3%82%88%E3%81%86%E3%81%8A%E9%A1%98%E3%81%84%E3%81%97%E3%81%BE%E3%81%99%E3%80%82">📩 更新をリクエスト</a>
     <span class="last-updated" id="lastUpdated"></span>
   </div>
   <div class="table-wrap">
