@@ -89,15 +89,7 @@ thead th.adv-col{background:#0a3d35;color:#4ECDC4;}
     <div class="stat-card">
       <div class="stat-label">アドバンス取得</div>
       <div class="stat-value green" id="s-adv">-</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">アドバンス未取得</div>
-      <div class="stat-value red" id="s-no">-</div>
       <div class="progress-wrap"><div class="progress-bar" id="s-bar" style="width:0%"></div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">アドバンス取得率</div>
-      <div class="stat-value" id="s-pct">-%</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">マスター取得</div>
@@ -190,9 +182,7 @@ function render(){
   var pct=f.length>0?Math.round(advCount/f.length*100):0;
   var deptCount=[...new Set(f.map(function(m){return m.dept;}).filter(Boolean))].length;
   document.getElementById('s-total').textContent=f.length;
-  document.getElementById('s-adv').textContent=advCount;
-  document.getElementById('s-no').textContent=noAdv.length;
-  document.getElementById('s-pct').textContent=pct+'%';var masterCount=f.filter(function(m){return hasMaster(m);}).length;var masterPct=f.length>0?Math.round(masterCount/f.length*100):0;document.getElementById('s-master').textContent=masterCount+'人 '+masterPct+'%';document.getElementById('s-master-bar').style.width=masterPct+'%';
+  document.getElementById('s-adv').textContent=advCount+'人 '+pct+'%';var masterCount=f.filter(function(m){return hasMaster(m);}).length;var masterPct=f.length>0?Math.round(masterCount/f.length*100):0;document.getElementById('s-master').textContent=masterCount+'人 '+masterPct+'%';document.getElementById('s-master-bar').style.width=masterPct+'%';
   document.getElementById('s-bar').style.width=pct+'%';
   document.getElementById('s-dept').textContent=deptCount;
   document.getElementById('countLabel').textContent=f.length+'人表示中';
